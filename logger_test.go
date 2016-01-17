@@ -16,7 +16,6 @@ func Example() {
 	logger.Crit("Some string for critical", 123, map[string]interface{}{"prop1": "val1", "prop2": 321})
 
 	// Output:
-
 	// [APP] 1999/10/17 - 10:11:10 [DEBUG]    logger_test.go:11  ▶  (string) (len=21) "Some string for debug"
 	// (int) 123
 	// (map[string]interface {}) (len=2) {

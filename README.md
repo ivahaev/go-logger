@@ -76,6 +76,14 @@ func Notice(v ...interface{})
 ```
 Notice logs provided arguments to console when level is NOTICE, INFO or DEBUG.
 
+#### func  Warn
+
+```go
+func Warn(v ...interface{})
+```
+Warn logs provided arguments to console when level is WARN, NOTICE, INFO or
+DEBUG.
+
 #### func  SetLevel
 
 ```go
@@ -84,10 +92,10 @@ func SetLevel(level string) error
 SetLevel sets level of logging. level can be "CRIT", 'ERROR', 'WARN', "NOTICE",
 "INFO" or "DEBUG"
 
-#### func  Warn
+#### func  SetTimeFormat
 
 ```go
-func Warn(v ...interface{})
+func SetTimeFormat(format string) error
 ```
-Warn logs provided arguments to console when level is WARN, NOTICE, INFO or
-DEBUG.
+SetTimeFormat sets string format for time.Time.Format() method
+Default is "2006/01/02 - 15:04:05"

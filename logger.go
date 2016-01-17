@@ -3,10 +3,12 @@ package logger
 import (
 	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
+
+	"github.com/davecgh/go-spew/spew"
 )
 
 const (
@@ -30,29 +32,35 @@ const (
 	FG_NORMAL string = "\x1b[0m"
 )
 
+const (
+	_ = iota
+	crit
+	err
+	warn
+	notice
+	info
+	debug
+)
+
+var (
+	logLevels = map[string]int{
+		"DEBUG":  6,
+		"INFO":   5,
+		"NOTICE": 4,
+		"WARN":   3,
+		"ERROR":  2,
+		"CRIT":   1,
+	}
+	logLevel int = 6
+	scs          = spew.NewDefaultConfig()
+)
+
 type logMessage struct {
-	v    []interface{}
-	file string
-	line int
+	v     []interface{}
+	file  string
+	line  int
+	level int
 }
-
-var logLevels = map[string]int{
-	"DEBUG":  6,
-	"INFO":   5,
-	"NOTICE": 4,
-	"WARN":   3,
-	"ERROR":  2,
-	"CRIT":   1,
-}
-
-var LogLevel string = "DEBUG"
-
-var logDebugChan = make(chan logMessage)
-var logInfoChan = make(chan logMessage)
-var logNoticeChan = make(chan logMessage)
-var logWarnChan = make(chan logMessage)
-var logErrorChan = make(chan logMessage)
-var logCritChan = make(chan logMessage)
 
 type setLogger struct {
 	level string
@@ -60,53 +68,54 @@ type setLogger struct {
 }
 
 func Debug(v ...interface{}) {
-	if logLevels[LogLevel] == 6 {
+	if logLevel == 6 {
 		file, line := getFileAndLine()
-		logDebugChan <- logMessage{v, file, line}
+		writeLog(&logMessage{v, file, line, 6})
 	}
 }
 
 func Info(v ...interface{}) {
-	if logLevels[LogLevel] >= 5 {
+	if logLevel >= 5 {
 		file, line := getFileAndLine()
-		logInfoChan <- logMessage{v, file, line}
+		writeLog(&logMessage{v, file, line, 5})
 	}
 }
 
 func Notice(v ...interface{}) {
-	if logLevels[LogLevel] >= 4 {
+	if logLevel >= 4 {
 		file, line := getFileAndLine()
-		logNoticeChan <- logMessage{v, file, line}
+		writeLog(&logMessage{v, file, line, 4})
 	}
 }
 
 func Warn(v ...interface{}) {
-	if logLevels[LogLevel] >= 3 {
+	if logLevel >= 3 {
 		file, line := getFileAndLine()
-		logWarnChan <- logMessage{v, file, line}
+		writeLog(&logMessage{v, file, line, 3})
 	}
 }
 
 func Error(v ...interface{}) {
-	if logLevels[LogLevel] >= 2 {
+	if logLevel >= 2 {
 		file, line := getFileAndLine()
-		logErrorChan <- logMessage{v, file, line}
+		writeLog(&logMessage{v, file, line, 2})
 	}
 }
 
 func Crit(v ...interface{}) {
-	if logLevels[LogLevel] >= 2 {
+	if logLevel >= 2 {
 		file, line := getFileAndLine()
-		logCritChan <- logMessage{v, file, line}
+		writeLog(&logMessage{v, file, line, 1})
 	}
 }
 
 func SetLevel(level string) error {
-	if level == "DEBUG" || level == "INFO" || level == "NOTICE" || level == "WARM" || level == "ERROR" || level == "CRIT" {
-		LogLevel = level
+	level = strings.ToUpper(level)
+	if numLevel, ok := logLevels[level]; ok {
+		logLevel = numLevel
 		return nil
 	}
-	return errors.New("Invalid log level. Set level: " + LogLevel)
+	return errors.New("Invalid log level: " + level)
 }
 
 func getFileAndLine() (string, int) {
@@ -114,55 +123,53 @@ func getFileAndLine() (string, int) {
 	return filepath.Base(file), line
 }
 
-func writeLog() {
-	for {
-		var (
-			v                   logMessage
-			color, level, extra string
-			debug               bool
-		)
-		select {
-		case v = <-logDebugChan:
-			color = FG_CYAN
-			level = "DEBUG"
-			extra = "   "
-			debug = true
-		case v = <-logInfoChan:
-			color = FG_WHITE
-			level = "INFO"
-			extra = "    "
-		case v = <-logNoticeChan:
-			color = FG_GREEN
-			level = "NOTICE"
-			extra = "  "
-		case v = <-logWarnChan:
-			color = FG_YELLOW
-			level = "WARNING"
-			extra = " "
-		case v = <-logErrorChan:
-			color = FG_RED
-			level = "ERROR"
-			extra = "   "
-		case v = <-logCritChan:
-			color = FG_BOLD_RED
-			level = "CRITICAL"
-			extra = ""
-		}
-
-		fmt.Print(color, "[APP] ", time.Now().Format("2006/01/02 - 15:04:05"), " [", level, "] ", extra, v.file, ":", v.line, "  ▶  ")
-		for i, value := range v.v {
-			if debug {
-				value = spew.Sdump(value)
-			}
-			fmt.Printf("%+v", value)
-			if i < len(v.v)-1 {
-				fmt.Print(" | ")
-			}
-		}
-		fmt.Print(FG_NORMAL, "\n")
+func writeLog(v *logMessage) {
+	var (
+		color string
+		level string
+		extra string
+	)
+	switch v.level {
+	case debug:
+		color = FG_CYAN
+		level = "DEBUG"
+		extra = "   "
+	case info:
+		color = FG_WHITE
+		level = "INFO"
+		extra = "    "
+	case notice:
+		color = FG_GREEN
+		level = "NOTICE"
+		extra = "  "
+	case warn:
+		color = FG_YELLOW
+		level = "WARNING"
+		extra = " "
+	case err:
+		color = FG_RED
+		level = "ERROR"
+		extra = "   "
+	case crit:
+		color = FG_BOLD_RED
+		level = "CRITICAL"
+		extra = ""
 	}
+
+	out := fmt.Sprint(color, "[APP] ", time.Now().Format("2006/01/02 - 15:04:05"), " [", level, "] ", extra, v.file, ":", v.line, "  ▶  ")
+	for i, value := range v.v {
+		if v.level == debug {
+			value = scs.Sdump(value)
+		}
+		out += fmt.Sprintf("%+v", value)
+		if v.level != debug && i < len(v.v)-1 {
+			out += fmt.Sprint(" | ")
+		}
+	}
+	out += fmt.Sprint(FG_NORMAL)
+	fmt.Println(out)
 }
 
 func init() {
-	go writeLog()
+	scs = &spew.ConfigState{Indent: "\t", SortKeys: true}
 }

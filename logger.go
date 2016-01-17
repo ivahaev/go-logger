@@ -50,8 +50,9 @@ var (
 		"ERROR":  2,
 		"CRIT":   1,
 	}
-	logLevel int = 6
-	scs          = spew.NewDefaultConfig()
+	logLevel   int = 6
+	timeFormat     = "2006/01/02 - 15:04:05"
+	scs            = spew.NewDefaultConfig()
 )
 
 type logMessage struct {
@@ -126,6 +127,12 @@ func SetLevel(level string) error {
 	return errors.New("Invalid log level: " + level)
 }
 
+// SetTimeFormat sets string format for time.Time.Format() method
+// Default is "2006/01/02 - 15:04:05"
+func SetTimeFormat(format string) {
+	timeFormat = format
+}
+
 func getFileAndLine() (string, int) {
 	_, file, line, _ := runtime.Caller(2)
 	return filepath.Base(file), line
@@ -164,7 +171,8 @@ func writeLog(v *logMessage) {
 		extra = ""
 	}
 
-	out := fmt.Sprint(color, "[APP] ", time.Now().Format("2006/01/02 - 15:04:05"), " [", level, "] ", extra, v.file, ":", v.line, "  ▶  ")
+	now := time.Now().Format(timeFormat)
+	out := fmt.Sprint(color, "[APP] ", now, " [", level, "] ", extra, v.file, ":", v.line, "  ▶  ")
 	for i, value := range v.v {
 		if v.level == debug {
 			value = scs.Sdump(value)

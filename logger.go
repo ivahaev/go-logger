@@ -143,7 +143,7 @@ func writeLog(v *logMessage) {
 		level = "DEBUG"
 		extra = "   "
 	case info:
-		color = fgWhite
+		color = fgNormal
 		level = "INFO"
 		extra = "    "
 	case notice:

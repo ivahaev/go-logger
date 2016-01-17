@@ -12,24 +12,23 @@ import (
 )
 
 const (
-	FG_BOLD_BLACK   string = "\x1b[30;1m"
-	FG_BOLD_RED     string = "\x1b[31;1m"
-	FG_BOLD_GREEN   string = "\x1b[32;1m"
-	FG_BOLD_YELLOW  string = "\x1b[33;1m"
-	FG_BOLD_BLUE    string = "\x1b[34;1m"
-	FG_BOLD_MAGENTA string = "\x1b[35;1m"
-	FG_BOLD_CYAN    string = "\x1b[36;1m"
-	FG_BOLD_WHITE   string = "\x1b[37;1m"
-	FG_BLACK        string = "\x1b[30m"
-	FG_RED          string = "\x1b[31m"
-	FG_GREEN        string = "\x1b[32m"
-	FG_YELLOW       string = "\x1b[33m"
-	FG_BLUE         string = "\x1b[34m"
-	FG_MAGENTA      string = "\x1b[35m"
-	FG_CYAN         string = "\x1b[36m"
-	FG_WHITE        string = "\x1b[37m"
-
-	FG_NORMAL string = "\x1b[0m"
+	fgBoldBlack   string = "\x1b[30;1m"
+	fbBoldRed     string = "\x1b[31;1m"
+	fgBoldGreen   string = "\x1b[32;1m"
+	fgBoldYellow  string = "\x1b[33;1m"
+	fgBoldBlue    string = "\x1b[34;1m"
+	fgBoldMagenta string = "\x1b[35;1m"
+	fgBoldCyan    string = "\x1b[36;1m"
+	fgBoldWhite   string = "\x1b[37;1m"
+	fbBlack       string = "\x1b[30m"
+	fgRed         string = "\x1b[31m"
+	fgGreen       string = "\x1b[32m"
+	fgYellow      string = "\x1b[33m"
+	fgBlue        string = "\x1b[34m"
+	fgMagenta     string = "\x1b[35m"
+	fgCyan        string = "\x1b[36m"
+	fgWhite       string = "\x1b[37m"
+	fgNormal      string = "\x1b[0m"
 )
 
 const (
@@ -67,6 +66,8 @@ type setLogger struct {
 	out   string
 }
 
+// Debug logs provided arguments to console with extra info.
+// Works only when level sets to DEBUG (default)
 func Debug(v ...interface{}) {
 	if logLevel == 6 {
 		file, line := getFileAndLine()
@@ -74,6 +75,7 @@ func Debug(v ...interface{}) {
 	}
 }
 
+// Info logs provided arguments to console when level is INFO or DEBUG.
 func Info(v ...interface{}) {
 	if logLevel >= 5 {
 		file, line := getFileAndLine()
@@ -81,6 +83,7 @@ func Info(v ...interface{}) {
 	}
 }
 
+// Notice logs provided arguments to console when level is NOTICE, INFO or DEBUG.
 func Notice(v ...interface{}) {
 	if logLevel >= 4 {
 		file, line := getFileAndLine()
@@ -88,6 +91,7 @@ func Notice(v ...interface{}) {
 	}
 }
 
+// Warn logs provided arguments to console when level is WARN, NOTICE, INFO or DEBUG.
 func Warn(v ...interface{}) {
 	if logLevel >= 3 {
 		file, line := getFileAndLine()
@@ -95,6 +99,7 @@ func Warn(v ...interface{}) {
 	}
 }
 
+// Error logs provided arguments to console when level is ERROR, WARN, NOTICE, INFO or DEBUG.
 func Error(v ...interface{}) {
 	if logLevel >= 2 {
 		file, line := getFileAndLine()
@@ -102,6 +107,7 @@ func Error(v ...interface{}) {
 	}
 }
 
+// Crit logs provided arguments to console when level is CRIT, ERROR, WARN, NOTICE, INFO or DEBUG.
 func Crit(v ...interface{}) {
 	if logLevel >= 2 {
 		file, line := getFileAndLine()
@@ -109,6 +115,8 @@ func Crit(v ...interface{}) {
 	}
 }
 
+// SetLevel sets level of logging.
+// level can be "CRIT", 'ERROR', 'WARN', "NOTICE", "INFO" or "DEBUG"
 func SetLevel(level string) error {
 	level = strings.ToUpper(level)
 	if numLevel, ok := logLevels[level]; ok {
@@ -131,27 +139,27 @@ func writeLog(v *logMessage) {
 	)
 	switch v.level {
 	case debug:
-		color = FG_CYAN
+		color = fgCyan
 		level = "DEBUG"
 		extra = "   "
 	case info:
-		color = FG_WHITE
+		color = fgWhite
 		level = "INFO"
 		extra = "    "
 	case notice:
-		color = FG_GREEN
+		color = fgGreen
 		level = "NOTICE"
 		extra = "  "
 	case warn:
-		color = FG_YELLOW
+		color = fgYellow
 		level = "WARNING"
 		extra = " "
 	case err:
-		color = FG_RED
+		color = fgRed
 		level = "ERROR"
 		extra = "   "
 	case crit:
-		color = FG_BOLD_RED
+		color = fbBoldRed
 		level = "CRITICAL"
 		extra = ""
 	}
@@ -166,7 +174,7 @@ func writeLog(v *logMessage) {
 			out += fmt.Sprint(" | ")
 		}
 	}
-	out += fmt.Sprint(FG_NORMAL)
+	out += fmt.Sprint(fgNormal)
 	fmt.Println(out)
 }
 

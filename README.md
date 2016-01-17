@@ -14,6 +14,8 @@ Colorizing, timestamping and on Debug output vars with additional info
     import "github.com/ivahaev/go-logger"
 ```
 
+[Godoc](https://godoc.org/github.com/ivahaev/go-logger)
+
 ## Example
 
 ```go

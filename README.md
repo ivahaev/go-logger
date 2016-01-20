@@ -1,5 +1,5 @@
 # go-logger
-[![Build Status](https://travis-ci.org/ivahaev/go-logger.svg?branch=master)](http://travis-ci.org/ivahaev/go-logger)
+[![Build Status](https://travis-ci.org/ivahaev/go-logger.svg?branch=master)](http://travis-ci.org/ivahaev/go-logger) [![GoDoc](https://godoc.org/github.com/ivahaev/go-logger?status.svg)](https://godoc.org/github.com/ivahaev/go-logger)
 
 Simple logger library for golang.
 Colorizing, timestamping and on Debug output vars with additional info
@@ -15,8 +15,6 @@ Colorizing, timestamping and on Debug output vars with additional info
 ```go
     import "github.com/ivahaev/go-logger"
 ```
-
-[Godoc](https://godoc.org/github.com/ivahaev/go-logger)
 
 ## Example
 

@@ -150,7 +150,7 @@ func writeLog(v *logMessage) {
 		level = "DEBUG"
 		extra = "   "
 	case info:
-		color = fgNormal
+		color = ""
 		level = "INFO"
 		extra = "    "
 	case notice:
@@ -182,7 +182,9 @@ func writeLog(v *logMessage) {
 			out += fmt.Sprint(" | ")
 		}
 	}
-	out += fmt.Sprint(fgNormal)
+	if v.level != info {
+		out += fmt.Sprint(fgNormal)
+	}
 	fmt.Println(out)
 }
 

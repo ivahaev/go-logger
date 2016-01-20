@@ -71,49 +71,41 @@ type setLogger struct {
 // Works only when level sets to DEBUG (default)
 func Debug(v ...interface{}) {
 	if logLevel == 6 {
-		file, line := getFileAndLine()
-		writeLog(&logMessage{v, file, line, 6})
+		writeLog(createMessage(v, 6))
 	}
 }
 
 // Info logs provided arguments to console when level is INFO or DEBUG.
 func Info(v ...interface{}) {
 	if logLevel >= 5 {
-		file, line := getFileAndLine()
-		writeLog(&logMessage{v, file, line, 5})
+		writeLog(createMessage(v, 5))
 	}
 }
 
 // Notice logs provided arguments to console when level is NOTICE, INFO or DEBUG.
 func Notice(v ...interface{}) {
 	if logLevel >= 4 {
-		file, line := getFileAndLine()
-		writeLog(&logMessage{v, file, line, 4})
+		writeLog(createMessage(v, 4))
 	}
 }
 
 // Warn logs provided arguments to console when level is WARN, NOTICE, INFO or DEBUG.
 func Warn(v ...interface{}) {
 	if logLevel >= 3 {
-		file, line := getFileAndLine()
-		writeLog(&logMessage{v, file, line, 3})
+		writeLog(createMessage(v, 3))
 	}
 }
 
 // Error logs provided arguments to console when level is ERROR, WARN, NOTICE, INFO or DEBUG.
 func Error(v ...interface{}) {
 	if logLevel >= 2 {
-		file, line := getFileAndLine()
-		writeLog(&logMessage{v, file, line, 2})
+		writeLog(createMessage(v, 2))
 	}
 }
 
 // Crit logs provided arguments to console when level is CRIT, ERROR, WARN, NOTICE, INFO or DEBUG.
 func Crit(v ...interface{}) {
-	if logLevel >= 2 {
-		file, line := getFileAndLine()
-		writeLog(&logMessage{v, file, line, 1})
-	}
+	writeLog(createMessage(v, 1))
 }
 
 // SetLevel sets level of logging.
@@ -133,12 +125,21 @@ func SetTimeFormat(format string) {
 	timeFormat = format
 }
 
+func createMessage(v []interface{}, level int) *logMessage {
+	file, line := getFileAndLine()
+	return &logMessage{v, file, line, level}
+}
+
 func getFileAndLine() (string, int) {
-	_, file, line, _ := runtime.Caller(2)
+	_, file, line, _ := runtime.Caller(3)
 	return filepath.Base(file), line
 }
 
 func writeLog(v *logMessage) {
+	fmt.Println(createLogString(v))
+}
+
+func createLogString(v *logMessage) string {
 	var (
 		color string
 		level string
@@ -185,7 +186,8 @@ func writeLog(v *logMessage) {
 	if v.level != info {
 		out += fmt.Sprint(fgNormal)
 	}
-	fmt.Println(out)
+
+	return out
 }
 
 func init() {

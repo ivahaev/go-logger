@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -53,6 +54,7 @@ var (
 	logLevel   int = 6
 	timeFormat     = "2006/01/02 - 15:04:05"
 	scs            = spew.NewDefaultConfig()
+	mutex          = &sync.Mutex{}
 )
 
 type logMessage struct {
@@ -136,7 +138,10 @@ func getFileAndLine() (string, int) {
 }
 
 func writeLog(v *logMessage) {
+	// Mutex used just for queueing messages
+	mutex.Lock()
 	fmt.Println(createLogString(v))
+	mutex.Unlock()
 }
 
 func createLogString(v *logMessage) string {

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	js "encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
@@ -40,10 +41,12 @@ const (
 	notice
 	info
 	debug
+	json
 )
 
 var (
 	logLevels = map[string]int{
+		"JSON":   7,
 		"DEBUG":  6,
 		"INFO":   5,
 		"NOTICE": 4,
@@ -51,10 +54,10 @@ var (
 		"ERROR":  2,
 		"CRIT":   1,
 	}
-	logLevel   int = 6
-	timeFormat     = "2006/01/02 - 15:04:05"
-	scs            = spew.NewDefaultConfig()
-	mutex          = &sync.Mutex{}
+	logLevel   = 6
+	timeFormat = "2006/01/02 - 15:04:05"
+	scs        = spew.NewDefaultConfig()
+	mutex      = &sync.Mutex{}
 )
 
 type logMessage struct {
@@ -69,38 +72,46 @@ type setLogger struct {
 	out   string
 }
 
+// JSON logs provided arguments to console with json.MarshalIndent each arguments.
+// Works only when level sets to DEBUG (default)
+func JSON(v ...interface{}) {
+	if logLevel == debug {
+		writeLog(createMessage(v, json))
+	}
+}
+
 // Debug logs provided arguments to console with extra info.
 // Works only when level sets to DEBUG (default)
 func Debug(v ...interface{}) {
-	if logLevel == 6 {
-		writeLog(createMessage(v, 6))
+	if logLevel == debug {
+		writeLog(createMessage(v, debug))
 	}
 }
 
 // Info logs provided arguments to console when level is INFO or DEBUG.
 func Info(v ...interface{}) {
-	if logLevel >= 5 {
+	if logLevel >= info {
 		writeLog(createMessage(v, 5))
 	}
 }
 
 // Notice logs provided arguments to console when level is NOTICE, INFO or DEBUG.
 func Notice(v ...interface{}) {
-	if logLevel >= 4 {
+	if logLevel >= notice {
 		writeLog(createMessage(v, 4))
 	}
 }
 
 // Warn logs provided arguments to console when level is WARN, NOTICE, INFO or DEBUG.
 func Warn(v ...interface{}) {
-	if logLevel >= 3 {
+	if logLevel >= warn {
 		writeLog(createMessage(v, 3))
 	}
 }
 
 // Error logs provided arguments to console when level is ERROR, WARN, NOTICE, INFO or DEBUG.
 func Error(v ...interface{}) {
-	if logLevel >= 2 {
+	if logLevel >= err {
 		writeLog(createMessage(v, 2))
 	}
 }
@@ -180,9 +191,18 @@ func createLogString(v *logMessage) string {
 	now := time.Now().Format(timeFormat)
 	out := fmt.Sprint(color, "[APP] ", now, " [", level, "] ", extra, v.file, ":", v.line, "  ▶  ")
 	for i, value := range v.v {
-		if v.level == debug {
+		switch v.level {
+		case debug:
 			value = scs.Sdump(value)
+		case json:
+			val, err := js.MarshalIndent(value, "", "  ")
+			if err != nil {
+				value = err.Error()
+			} else {
+				value = string(val)
+			}
 		}
+
 		out += fmt.Sprintf("%+v", value)
 		if v.level != debug && i < len(v.v)-1 {
 			out += fmt.Sprint(" | ")
@@ -196,5 +216,5 @@ func createLogString(v *logMessage) string {
 }
 
 func init() {
-	scs = &spew.ConfigState{Indent: "\t", SortKeys: true}
+	scs = &spew.ConfigState{Indent: "  ", SortKeys: true}
 }

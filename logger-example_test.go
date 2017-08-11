@@ -24,3 +24,29 @@ func ExampleInfoLowLevel() {
 
 	// Output:
 }
+
+func ExampleInfoF() {
+	logger.SetTimeFormat("dummy-time")
+
+	logger.SetLevel("INFO")
+
+	logger.Infof("Some string for %v", "info")
+
+	// Output:
+	// [APP] dummy-time [INFO]     logger-example_test.go:33  ▶  Some string for info
+
+	logger.SetLevel("NOTICE")
+}
+
+func ExampleInfoFMultipleArguments() {
+	logger.SetTimeFormat("dummy-time")
+
+	logger.SetLevel("INFO")
+
+	logger.Infof("Some string for info | %v | %s | %s", "123", "val1", "321")
+
+	// Output:
+	// [APP] dummy-time [INFO]     logger-example_test.go:46  ▶  Some string for info | 123 | val1 | 321
+
+	logger.SetLevel("NOTICE")
+}

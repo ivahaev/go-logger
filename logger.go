@@ -121,6 +121,47 @@ func Crit(v ...interface{}) {
 	writeLog(createMessage(v, 1))
 }
 
+// Debugf logs provided arguments to console with extra info.
+// Works only when level sets to DEBUG (default)
+func Debugf(format string, v ...interface{}) {
+	if logLevel == debug {
+		writeLog(createFormattedMessage(debug, format, v))
+	}
+}
+
+// Infof logs provided arguments to console when level is INFO or DEBUG.
+func Infof(format string, v ...interface{}) {
+	if logLevel >= info {
+		writeLog(createFormattedMessage(5, format, v))
+	}
+}
+
+// Noticef logs provided arguments to console when level is NOTICE, INFO or DEBUG.
+func Noticef(format string, v ...interface{}) {
+	if logLevel >= notice {
+		writeLog(createFormattedMessage(4, format, v))
+	}
+}
+
+// Warnf logs provided arguments to console when level is WARN, NOTICE, INFO or DEBUG.
+func Warnf(format string, v ...interface{}) {
+	if logLevel >= warn {
+		writeLog(createFormattedMessage(3, format, v))
+	}
+}
+
+// Errorf logs provided arguments to console when level is ERROR, WARN, NOTICE, INFO or DEBUG.
+func Errorf(format string, v ...interface{}) {
+	if logLevel >= err {
+		writeLog(createFormattedMessage(2, format, v))
+	}
+}
+
+// Critf logs provided arguments to console when level is CRIT, ERROR, WARN, NOTICE, INFO or DEBUG.
+func Critf(format string, v ...interface{}) {
+	writeLog(createFormattedMessage(1, format, v))
+}
+
 // SetLevel sets level of logging.
 // level can be "CRIT", 'ERROR', 'WARN', "NOTICE", "INFO" or "DEBUG"
 func SetLevel(level string) error {
@@ -140,6 +181,14 @@ func SetTimeFormat(format string) {
 
 func createMessage(v []interface{}, level int) *logMessage {
 	file, line := getFileAndLine()
+	return &logMessage{v, file, line, level}
+}
+
+func createFormattedMessage(level int, format string, v []interface{}) *logMessage {
+	file, line := getFileAndLine()
+	message := fmt.Sprintf(format, v...)
+	v = make([]interface{}, 1)
+	v[0] = message
 	return &logMessage{v, file, line, level}
 }
 
